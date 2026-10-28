@@ -1,8 +1,7 @@
-import asyncio
 import traceback
 from datetime import datetime
 import aiosqlite
-from flask import Flask, request
+from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
@@ -14,7 +13,7 @@ DB_PATH = "/tmp/davomat.db"
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
-app = Flask(__name__)
+app = FastAPI()
 
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
@@ -129,19 +128,19 @@ async def report(message: Message):
 
     await message.answer(text, parse_mode=ParseMode.HTML)
 
-# --- Flask Webhook Handler ---
-@app.route("/webhook", methods=["POST"])
-@app.route("/api/webhook", methods=["POST"])
-def webhook():
+# --- FastAPI Webhook Handler ---
+@app.post("/webhook")
+@app.post("/api/webhook")
+async def webhook(request: Request):
     try:
-        json_data = request.get_json(silent=True)
+        json_data = await request.json()
         if json_data:
-            asyncio.run(dp.feed_raw_update(bot, json_data))
+            await dp.feed_raw_update(bot, json_data)
         return {"ok": True}
     except Exception as e:
         traceback.print_exc()
-        return {"ok": False, "error": str(e)}, 500
+        return {"ok": False, "error": str(e)}
 
-@app.route("/", methods=["GET"])
-def index():
-    return {"status": "Bot is running via Flask Webhook on Vercel!"}
+@app.get("/")
+async def index():
+    return {"status": "Bot is running via FastAPI Webhook on Vercel!"}

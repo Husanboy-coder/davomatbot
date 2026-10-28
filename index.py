@@ -133,6 +133,7 @@ async def report(message: Message):
     await message.answer(text, parse_mode=ParseMode.HTML)
 
 # --- Vercel Webhook Endpoint ---
+@app.post("/webhook")
 @app.post("/api/webhook")
 async def webhook(request: Request):
     json_data = await request.json()

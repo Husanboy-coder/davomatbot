@@ -7,13 +7,12 @@ from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery, Update
 from aiogram.enums import ParseMode
 BOT_TOKEN = "8814886432:AAGg7JG5-JghTl0BxoxpDG0Ni5rhF4WGE6k"
-ADMIN_IDS = [93372553, 7196958222] 
+ADMIN_IDS = [93372553, 7196958222]
 DB_PATH = "/tmp/davomat.db"
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 app = Flask(__name__)
 async def init_db():
-    """Ma'lumotlar bazasini yaratish"""
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
             CREATE TABLE IF NOT EXISTS davomat (
@@ -126,7 +125,7 @@ async def report(message: Message):
 
     await message.answer(text, parse_mode=ParseMode.HTML)
 
-@app.route("/webhook", methods=["POST"])
+# --- Flask Webhook Handler ---
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
     json_data = request.get_json()

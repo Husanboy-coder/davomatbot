@@ -4,7 +4,7 @@ import aiosqlite
 from fastapi import FastAPI, Request
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery, BotCommand
 from aiogram.enums import ParseMode
 
 BOT_TOKEN = "8814886432:AAGg7JG5-JghTl0BxoxpDG0Ni5rhF4WGE6k"
@@ -28,6 +28,17 @@ async def init_db():
             )
         """)
         await db.commit()
+
+# --- Register Bot Command Menu on Startup ---
+@app.on_event("startup")
+async def startup_event():
+    await init_db()
+    commands = [
+        BotCommand(command="start", description="Botni ishga tushirish"),
+        BotCommand(command="davomat", description="Davomatni boshlash (Admin)"),
+        BotCommand(command="hisobot", description="Bugungi natijalarni ko'rish (Admin)")
+    ]
+    await bot.set_my_commands(commands)
 
 def is_admin(user_id: int) -> bool:
     return user_id in ADMIN_IDS

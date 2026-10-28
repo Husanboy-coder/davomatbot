@@ -1,23 +1,17 @@
 import asyncio
 from datetime import datetime
 import aiosqlite
+from flask import Flask, request
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery, Update
 from aiogram.enums import ParseMode
-from fastapi import FastAPI, Request
-
-# ================== SOZLAMALAR ==================
 BOT_TOKEN = "8814886432:AAGg7JG5-JghTl0BxoxpDG0Ni5rhF4WGE6k"
-ADMIN_IDS = [93372553]
-# Vercel-da faqat /tmp papkasi yozish uchun ochiq
+ADMIN_IDS = [93372553, 7196958222] 
 DB_PATH = "/tmp/davomat.db"
-# =================================================
-
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
-app = FastAPI()
-
+app = Flask(__name__)
 async def init_db():
     """Ma'lumotlar bazasini yaratish"""
     async with aiosqlite.connect(DB_PATH) as db:
@@ -34,7 +28,7 @@ async def init_db():
         await db.commit()
 
 def is_admin(user_id: int) -> bool:
-    return user_id in ADMIN_IDS+[7196958222]
+    return user_id in ADMIN_IDS
 
 @dp.message(Command("start"))
 async def start(message: Message):
@@ -94,7 +88,7 @@ async def process_status(callback: CallbackQuery):
 
     await callback.answer(f"Qabul qilindi: {status_text}")
 
-    for admin_id in ADMIN_IDS+[7196958222]:
+    for admin_id in ADMIN_IDS:
         try:
             await bot.send_message(
                 admin_id,
@@ -132,15 +126,15 @@ async def report(message: Message):
 
     await message.answer(text, parse_mode=ParseMode.HTML)
 
-# --- Vercel Webhook Endpoint ---
-@app.post("/webhook")
-@app.post("/api/webhook")
-async def webhook(request: Request):
-    json_data = await request.json()
-    update = Update.model_validate(json_data, context={"bot": bot})
-    await dp.feed_update(bot, update)
+@app.route("/webhook", methods=["POST"])
+@app.route("/api/webhook", methods=["POST"])
+def webhook():
+    json_data = request.get_json()
+    if json_data:
+        update = Update.model_validate(json_data, context={"bot": bot})
+        asyncio.run(dp.feed_update(bot, update))
     return {"ok": True}
 
-@app.get("/")
-async def index():
-    return {"status": "Bot is running via Webhook on Vercel!"}
+@app.route("/", methods=["GET"])
+def index():
+    return {"status": "Bot is running via Flask Webhook on Vercel!"}

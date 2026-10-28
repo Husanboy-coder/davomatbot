@@ -130,6 +130,7 @@ async def report(message: Message):
     await message.answer(text, parse_mode=ParseMode.HTML)
 
 # --- Flask Webhook Handler ---
+@app.route("/webhook", methods=["POST"])
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
     try:

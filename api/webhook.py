@@ -1,17 +1,21 @@
 import asyncio
+import traceback
 from datetime import datetime
 import aiosqlite
 from flask import Flask, request
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery, Update
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
 from aiogram.enums import ParseMode
+
 BOT_TOKEN = "8814886432:AAGg7JG5-JghTl0BxoxpDG0Ni5rhF4WGE6k"
 ADMIN_IDS = [93372553, 7196958222]
 DB_PATH = "/tmp/davomat.db"
+
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 app = Flask(__name__)
+
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("""
@@ -128,11 +132,14 @@ async def report(message: Message):
 # --- Flask Webhook Handler ---
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
-    json_data = request.get_json()
-    if json_data:
-        update = Update.model_validate(json_data, context={"bot": bot})
-        asyncio.run(dp.feed_update(bot, update))
-    return {"ok": True}
+    try:
+        json_data = request.get_json(silent=True)
+        if json_data:
+            asyncio.run(dp.feed_raw_update(bot, json_data))
+        return {"ok": True}
+    except Exception as e:
+        traceback.print_exc()
+        return {"ok": False, "error": str(e)}, 500
 
 @app.route("/", methods=["GET"])
 def index():

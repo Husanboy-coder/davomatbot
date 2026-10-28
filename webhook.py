@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, C
 from aiogram.enums import ParseMode
 
 BOT_TOKEN = "8814886432:AAGg7JG5-JghTl0BxoxpDG0Ni5rhF4WGE6k"
-ADMIN_IDS = [93372553, 7196958222]
+ADMIN_IDS = [8854852506, 7196958222]
 DB_PATH = "/tmp/davomat.db"
 
 bot = Bot(token=BOT_TOKEN)
